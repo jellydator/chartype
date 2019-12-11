@@ -1,4 +1,4 @@
-module github.com/Off-the-Charts/chartype
+module github.com/swithek/chartype
 
 go 1.13
 
