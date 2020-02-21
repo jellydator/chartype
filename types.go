@@ -22,6 +22,12 @@ const (
 	CandleClose
 )
 
+var (
+	// ErrInvalidCandleField is returned when candle field
+	// with invalid value is being used.
+	ErrInvalidCandleField = errors.New("invalid candle field")
+)
+
 // Candle stores specific timeframe's starting, closing,
 // highest and lowest price points.
 type Candle struct {
@@ -36,6 +42,17 @@ type Candle struct {
 // Can be included in configuration structures.
 type CandleField int
 
+// Validate checks whether the candle field is one of
+// supported field types.
+func (cf CandleField) Validate() error {
+	switch cf {
+	case CandleOpen, CandleHigh, CandleLow, CandleClose:
+		return nil
+	default:
+		return ErrInvalidCandleField
+	}
+}
+
 // MarshalJSON turns candle field to appropriate string
 // representation in JSON.
 func (cf CandleField) MarshalJSON() ([]byte, error) {
@@ -49,7 +66,7 @@ func (cf CandleField) MarshalJSON() ([]byte, error) {
 	case CandleClose:
 		return []byte("close"), nil
 	default:
-		return nil, errors.New("undefined candle field")
+		return nil, ErrInvalidCandleField
 	}
 }
 
@@ -73,7 +90,7 @@ func (cf *CandleField) UnmarshalJSON(d []byte) error {
 	case "close", "c":
 		*cf = CandleClose
 	default:
-		return errors.New("undefined candle field")
+		return ErrInvalidCandleField
 	}
 
 	return nil
@@ -107,6 +124,12 @@ const (
 	TickerBid
 )
 
+var (
+	// ErrInvalidTickerField is returned when ticker field
+	// with invalid value is being used.
+	ErrInvalidTickerField = errors.New("invalid ticker field")
+)
+
 // Ticker holds current ask, last and bid prices.
 type Ticker struct {
 	Last decimal.Decimal
@@ -119,6 +142,17 @@ type Ticker struct {
 // Can be included in configuration structures.
 type TickerField int
 
+// Validate checks whether the ticker field is one of
+// supported field types.
+func (tf TickerField) Validate() error {
+	switch tf {
+	case TickerLast, TickerAsk, TickerBid:
+		return nil
+	default:
+		return ErrInvalidTickerField
+	}
+}
+
 // MarshalJSON turns ticker field to appropriate string
 // representation in JSON.
 func (tf TickerField) MarshalJSON() ([]byte, error) {
@@ -130,7 +164,7 @@ func (tf TickerField) MarshalJSON() ([]byte, error) {
 	case TickerBid:
 		return []byte("bid"), nil
 	default:
-		return nil, errors.New("undefined ticker field")
+		return nil, ErrInvalidTickerField
 	}
 }
 
@@ -152,7 +186,7 @@ func (tf *TickerField) UnmarshalJSON(d []byte) error {
 	case "bid", "b":
 		*tf = TickerBid
 	default:
-		return errors.New("undefined ticker field")
+		return ErrInvalidTickerField
 	}
 
 	return nil
