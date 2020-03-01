@@ -20,6 +20,9 @@ const (
 
 	// CandleClose specifies last candle's value.
 	CandleClose
+
+	// CandleVolume specifies candle's volume value.
+	CandleVolume
 )
 
 var (
@@ -31,10 +34,11 @@ var (
 // Candle stores specific timeframe's starting, closing,
 // highest and lowest price points.
 type Candle struct {
-	Open  decimal.Decimal `json:"open"`
-	High  decimal.Decimal `json:"high"`
-	Low   decimal.Decimal `json:"low"`
-	Close decimal.Decimal `json:"close"`
+	Open   decimal.Decimal `json:"open"`
+	High   decimal.Decimal `json:"high"`
+	Low    decimal.Decimal `json:"low"`
+	Close  decimal.Decimal `json:"close"`
+	Volume decimal.Decimal `json:"volume"`
 }
 
 // CandleField specifies which field should be extracted
@@ -46,7 +50,7 @@ type CandleField int
 // supported field types.
 func (cf CandleField) Validate() error {
 	switch cf {
-	case CandleOpen, CandleHigh, CandleLow, CandleClose:
+	case CandleOpen, CandleHigh, CandleLow, CandleClose, CandleVolume:
 		return nil
 	default:
 		return ErrInvalidCandleField
@@ -65,6 +69,8 @@ func (cf CandleField) MarshalJSON() ([]byte, error) {
 		return []byte("low"), nil
 	case CandleClose:
 		return []byte("close"), nil
+	case CandleVolume:
+		return []byte("volume"), nil
 	default:
 		return nil, ErrInvalidCandleField
 	}
@@ -89,6 +95,8 @@ func (cf *CandleField) UnmarshalJSON(d []byte) error {
 		*cf = CandleLow
 	case "close", "c":
 		*cf = CandleClose
+	case "volume", "v":
+		*cf = CandleVolume
 	default:
 		return ErrInvalidCandleField
 	}
@@ -108,6 +116,8 @@ func (cf CandleField) Extract(c Candle) decimal.Decimal {
 		return c.Low
 	case CandleClose:
 		return c.Close
+	case CandleVolume:
+		return c.Volume
 	default:
 		return decimal.Zero
 	}
