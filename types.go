@@ -132,9 +132,9 @@ var (
 
 // Ticker holds current ask, last and bid prices.
 type Ticker struct {
-	Last decimal.Decimal
-	Ask  decimal.Decimal
-	Bid  decimal.Decimal
+	Last decimal.Decimal `json:"last"`
+	Ask  decimal.Decimal `json:"ask"`
+	Bid  decimal.Decimal `json:"bid"`
 }
 
 // TickerField specifies which field should be extracted
@@ -210,6 +210,17 @@ func (tf TickerField) Extract(t Ticker) decimal.Decimal {
 // Packet holds ticker information as well as all
 // known candles for a specific timeframe.
 type Packet struct {
-	Ticker  Ticker
-	Candles []Candle
+	Ticker  Ticker   `json:"ticker"`
+	Candles []Candle `json:"candles"`
+}
+
+// FromCandles extracts specific candle fields from all provided candles
+// and puts them in plain number slice.
+func FromCandles(cc []Candle, cf CandleField) []decimal.Decimal {
+	var res []decimal.Decimal
+	for _, c := range cc {
+		res = append(res, cf.Extract(c))
+	}
+
+	return res
 }
