@@ -123,6 +123,38 @@ func (cf CandleField) Extract(c Candle) decimal.Decimal {
 	}
 }
 
+// ParseCandle parses candle's string parameters into a new candle with strongly
+// typed number formats.
+func ParseCandle(o, h, l, c, v string) (Candle, error) {
+	opn, err := decimal.NewFromString(o)
+	if err != nil {
+		return Candle{}, err
+	}
+
+	hgh, err := decimal.NewFromString(h)
+	if err != nil {
+		return Candle{}, err
+	}
+
+	low, err := decimal.NewFromString(l)
+	if err != nil {
+		return Candle{}, err
+	}
+
+	cls, err := decimal.NewFromString(c)
+	if err != nil {
+		return Candle{}, err
+	}
+
+	vol, err := decimal.NewFromString(v)
+	if err != nil {
+		return Candle{}, err
+
+	}
+
+	return Candle{opn, hgh, low, cls, vol}, nil
+}
+
 const (
 	// TickerLast specifies the last ticker value.
 	TickerLast TickerField = iota + 1
