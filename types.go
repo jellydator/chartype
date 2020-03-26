@@ -130,18 +130,22 @@ func ParseCandle(o, h, l, c, v string) (Candle, error) {
 	if err != nil {
 		return Candle{}, err
 	}
+
 	hgh, err := decimal.NewFromString(h)
 	if err != nil {
 		return Candle{}, err
 	}
+
 	low, err := decimal.NewFromString(l)
 	if err != nil {
 		return Candle{}, err
 	}
+
 	cls, err := decimal.NewFromString(c)
 	if err != nil {
 		return Candle{}, err
 	}
+
 	vol, err := decimal.NewFromString(v)
 	if err != nil {
 		return Candle{}, err
