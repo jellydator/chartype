@@ -123,31 +123,31 @@ func (cf CandleField) Extract(c Candle) decimal.Decimal {
 	}
 }
 
-// Parses candle's string parameters into a new candle with strongly typed
-// number formats.
-func ParseCandle(o, h, l, c, v string) (*Candle, error) {
+// ParseCandle Parses candle's string parameters into a new candle with strongly
+// typed number formats.
+func ParseCandle(o, h, l, c, v string) (Candle, error) {
 	opn, err := decimal.NewFromString(o)
 	if err != nil {
-		return nil, err
+		return Candle{}, err
 	}
 	hgh, err := decimal.NewFromString(h)
 	if err != nil {
-		return nil, err
+		return Candle{}, err
 	}
 	low, err := decimal.NewFromString(l)
 	if err != nil {
-		return nil, err
+		return Candle{}, err
 	}
 	cls, err := decimal.NewFromString(c)
 	if err != nil {
-		return nil, err
+		return Candle{}, err
 	}
 	vol, err := decimal.NewFromString(v)
 	if err != nil {
-		return nil, err
+		return Candle{}, err
 
 	}
-	return &Candle{opn, hgh, low, cls, vol}, nil
+	return Candle{opn, hgh, low, cls, vol}, nil
 }
 
 const (
