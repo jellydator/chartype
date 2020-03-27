@@ -76,7 +76,6 @@ func (cf CandleField) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON turns JSON string to appropriate candle
-
 // field value.
 func (cf *CandleField) UnmarshalJSON(d []byte) error {
 	var f string
