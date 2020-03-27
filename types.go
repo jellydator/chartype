@@ -3,9 +3,8 @@ package chartype
 import (
 	"encoding/json"
 	"errors"
-	"strings"
-
 	"github.com/shopspring/decimal"
+	"strings"
 )
 
 const (
@@ -248,11 +247,11 @@ func (tf TickerField) Extract(t Ticker) decimal.Decimal {
 		return decimal.Zero
 	}
 }
+
 // ParseTicker parses ticker's string parameters into a new ticker with strongly
 // typed number formats.
 func ParseTicker(l, a, b string) (Ticker, error) {
 	lst, err := decimal.NewFromString(l)
-
 	if err != nil {
 		return Ticker{}, nil
 	}
