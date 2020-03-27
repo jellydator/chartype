@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+	"time"
+
 	"github.com/shopspring/decimal"
 )
 
@@ -33,11 +35,56 @@ var (
 // Candle stores specific timeframe's starting, closing,
 // highest and lowest price points.
 type Candle struct {
-	Open   decimal.Decimal `json:"open"`
-	High   decimal.Decimal `json:"high"`
-	Low    decimal.Decimal `json:"low"`
-	Close  decimal.Decimal `json:"close"`
-	Volume decimal.Decimal `json:"volume"`
+	Timestamp time.Time       `json:"timestamp"`
+	Open      decimal.Decimal `json:"open"`
+	High      decimal.Decimal `json:"high"`
+	Low       decimal.Decimal `json:"low"`
+	Close     decimal.Decimal `json:"close"`
+	Volume    decimal.Decimal `json:"volume"`
+}
+
+// NewCandle instantiates a new candle with the timestamp provided.
+func NewCandle(timestamp time.Time) Candle {
+	return Candle{
+		Timestamp: timestamp,
+	}
+}
+
+// Parse parses provided string parameters into corresponding candle's fields.
+func (c *Candle) Parse(opn, hgh, low, cls, vol string) error {
+	o, err := decimal.NewFromString(opn)
+	if err != nil {
+		return err
+	}
+
+	h, err := decimal.NewFromString(hgh)
+	if err != nil {
+		return err
+	}
+
+	l, err := decimal.NewFromString(low)
+	if err != nil {
+		return err
+	}
+
+	clsD, err := decimal.NewFromString(cls)
+	if err != nil {
+		return err
+	}
+
+	v, err := decimal.NewFromString(vol)
+	if err != nil {
+		return err
+
+	}
+
+	(*c).Open = o
+	(*c).High = h
+	(*c).Low = l
+	(*c).Close = clsD
+	(*c).Volume = v
+
+	return nil
 }
 
 // CandleField specifies which field should be extracted
@@ -122,36 +169,15 @@ func (cf CandleField) Extract(c Candle) decimal.Decimal {
 	}
 }
 
-// ParseCandle parses candle's string parameters into a new candle with strongly
-// typed number formats.
-func ParseCandle(o, h, l, c, v string) (Candle, error) {
-	opn, err := decimal.NewFromString(o)
-	if err != nil {
-		return Candle{}, err
+// FromCandles extracts specific candle fields from all provided candles
+// and puts them in plain number slice.
+func FromCandles(cc []Candle, cf CandleField) []decimal.Decimal {
+	var res []decimal.Decimal
+	for _, c := range cc {
+		res = append(res, cf.Extract(c))
 	}
 
-	hgh, err := decimal.NewFromString(h)
-	if err != nil {
-		return Candle{}, err
-	}
-
-	low, err := decimal.NewFromString(l)
-	if err != nil {
-		return Candle{}, err
-	}
-
-	cls, err := decimal.NewFromString(c)
-	if err != nil {
-		return Candle{}, err
-	}
-
-	vol, err := decimal.NewFromString(v)
-	if err != nil {
-		return Candle{}, err
-
-	}
-
-	return Candle{Open: opn, High: hgh, Low: low, Close: cls, Volume: vol}, nil
+	return res
 }
 
 const (
@@ -176,6 +202,27 @@ type Ticker struct {
 	Last decimal.Decimal `json:"last"`
 	Ask  decimal.Decimal `json:"ask"`
 	Bid  decimal.Decimal `json:"bid"`
+}
+
+// ParseTicker parses provided string parameters into decimal type values,
+// adds them into a new ticker instance and returns it.
+func ParseTicker(lst, ask, bid string) (Ticker, error) {
+	l, err := decimal.NewFromString(lst)
+	if err != nil {
+		return Ticker{}, nil
+	}
+
+	a, err := decimal.NewFromString(ask)
+	if err != nil {
+		return Ticker{}, nil
+	}
+
+	b, err := decimal.NewFromString(bid)
+	if err != nil {
+		return Ticker{}, nil
+	}
+
+	return Ticker{Last: l, Ask: a, Bid: b}, nil
 }
 
 // TickerField specifies which field should be extracted
@@ -248,41 +295,9 @@ func (tf TickerField) Extract(t Ticker) decimal.Decimal {
 	}
 }
 
-// ParseTicker parses ticker's string parameters into a new ticker with strongly
-// typed number formats.
-func ParseTicker(l, a, b string) (Ticker, error) {
-	lst, err := decimal.NewFromString(l)
-	if err != nil {
-		return Ticker{}, nil
-	}
-
-	ask, err := decimal.NewFromString(a)
-	if err != nil {
-		return Ticker{}, nil
-	}
-
-	bid, err := decimal.NewFromString(b)
-	if err != nil {
-		return Ticker{}, nil
-	}
-
-	return Ticker{Last: lst, Ask: ask, Bid: bid}, nil
-}
-
 // Packet holds ticker information as well as all
 // known candles for a specific timeframe.
 type Packet struct {
 	Ticker  Ticker   `json:"ticker"`
 	Candles []Candle `json:"candles"`
-}
-
-// FromCandles extracts specific candle fields from all provided candles
-// and puts them in plain number slice.
-func FromCandles(cc []Candle, cf CandleField) []decimal.Decimal {
-	var res []decimal.Decimal
-	for _, c := range cc {
-		res = append(res, cf.Extract(c))
-	}
-
-	return res
 }
