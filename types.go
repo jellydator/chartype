@@ -152,7 +152,7 @@ func ParseCandle(o, h, l, c, v string) (Candle, error) {
 
 	}
 
-	return Candle{opn, hgh, low, cls, vol}, nil
+	return Candle{Open: opn, High: hgh, Low: low, Close: cls, Volume: vol}, nil
 }
 
 const (
@@ -247,6 +247,27 @@ func (tf TickerField) Extract(t Ticker) decimal.Decimal {
 	default:
 		return decimal.Zero
 	}
+}
+// ParseTicker parses ticker's string parameters into a new ticker with strongly
+// typed number formats.
+func ParseTicker(l, a, b string) (Ticker, error) {
+	lst, err := decimal.NewFromString(l)
+
+	if err != nil {
+		return Ticker{}, nil
+	}
+
+	ask, err := decimal.NewFromString(a)
+	if err != nil {
+		return Ticker{}, nil
+	}
+
+	bid, err := decimal.NewFromString(b)
+	if err != nil {
+		return Ticker{}, nil
+	}
+
+	return Ticker{Last: lst, Ask: ask, Bid: bid}, nil
 }
 
 // Packet holds ticker information as well as all
