@@ -93,7 +93,7 @@ func (c *Candle) Parse(opn, hgh, low, cls, vol string) error {
 type CandleField int
 
 // Validate checks whether the candle field is one of
-// supported field types.
+// supported field types or not.
 func (cf CandleField) Validate() error {
 	switch cf {
 	case CandleOpen, CandleHigh, CandleLow, CandleClose, CandleVolume:
@@ -231,7 +231,7 @@ func ParseTicker(lst, ask, bid string) (Ticker, error) {
 type TickerField int
 
 // Validate checks whether the ticker field is one of
-// supported field types.
+// supported field types or not.
 func (tf TickerField) Validate() error {
 	switch tf {
 	case TickerLast, TickerAsk, TickerBid:
