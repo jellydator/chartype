@@ -106,20 +106,23 @@ func (cf CandleField) Validate() error {
 // MarshalJSON turns candle field to appropriate string
 // representation in JSON.
 func (cf CandleField) MarshalJSON() ([]byte, error) {
+	var v string
 	switch cf {
 	case CandleOpen:
-		return []byte("open"), nil
+		v = "open"
 	case CandleHigh:
-		return []byte("high"), nil
+		v = "high"
 	case CandleLow:
-		return []byte("low"), nil
+		v = "low"
 	case CandleClose:
-		return []byte("close"), nil
+		v = "close"
 	case CandleVolume:
-		return []byte("volume"), nil
+		v = "volume"
 	default:
 		return nil, ErrInvalidCandleField
 	}
+
+	return json.Marshal(v)
 }
 
 // UnmarshalJSON turns JSON string to appropriate candle
@@ -209,17 +212,17 @@ type Ticker struct {
 func ParseTicker(lst, ask, bid string) (Ticker, error) {
 	l, err := decimal.NewFromString(lst)
 	if err != nil {
-		return Ticker{}, nil
+		return Ticker{}, err
 	}
 
 	a, err := decimal.NewFromString(ask)
 	if err != nil {
-		return Ticker{}, nil
+		return Ticker{}, err
 	}
 
 	b, err := decimal.NewFromString(bid)
 	if err != nil {
-		return Ticker{}, nil
+		return Ticker{}, err
 	}
 
 	return Ticker{Last: l, Ask: a, Bid: b}, nil
@@ -244,16 +247,19 @@ func (tf TickerField) Validate() error {
 // MarshalJSON turns ticker field to appropriate string
 // representation in JSON.
 func (tf TickerField) MarshalJSON() ([]byte, error) {
+	var v string
 	switch tf {
 	case TickerLast:
-		return []byte("last"), nil
+		v = "last"
 	case TickerAsk:
-		return []byte("ask"), nil
+		v = "ask"
 	case TickerBid:
-		return []byte("bid"), nil
+		v = "bid"
 	default:
 		return nil, ErrInvalidTickerField
 	}
+
+	return json.Marshal(v)
 }
 
 // UnmarshalJSON turns JSON string to appropriate ticker
