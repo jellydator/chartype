@@ -150,85 +150,31 @@ func Test_CandleField_Validate(t *testing.T) {
 	}
 }
 
-func Test_CandleField_UnmarshalJSON(t *testing.T) {
-	cc := map[string]struct {
-		Data   string
-		Result CandleField
-		Err    error
-	}{
-		"Successful CandleOpen unmarshal": {
-			Data:   `"open"`,
-			Result: CandleOpen,
-		},
-		"Successful CandleHigh unmarshal": {
-			Data:   `"high"`,
-			Result: CandleHigh,
-		},
-		"Successful CandleLow unmarshal": {
-			Data:   `"low"`,
-			Result: CandleLow,
-		},
-		"Successful CandleClose unmarshal": {
-			Data:   `"close"`,
-			Result: CandleClose,
-		},
-		"Successful CandleVolume unmarshal": {
-			Data:   `"volume"`,
-			Result: CandleVolume,
-		},
-		"Malformed JSON": {
-			Data: `{"69"`,
-			Err:  assert.AnError,
-		},
-		"Invalid CandleField": {
-			Data: `"69"`,
-			Err:  ErrInvalidCandleField,
-		},
-	}
-
-	for cn, c := range cc {
-		c := c
-
-		t.Run(cn, func(t *testing.T) {
-			t.Parallel()
-
-			var cf CandleField
-			err := cf.UnmarshalJSON([]byte(c.Data))
-			AssertEqualError(t, c.Err, err)
-			if err != nil {
-				return
-			}
-
-			assert.Equal(t, c.Result, cf)
-		})
-	}
-}
-
 func Test_CandleField_MarshalJSON(t *testing.T) {
 	cc := map[string]struct {
 		CandleField CandleField
-		Result      string
+		JSON        string
 		Err         error
 	}{
 		"Successful CandleOpen marshal": {
 			CandleField: CandleOpen,
-			Result:      `"open"`,
+			JSON:        `"open"`,
 		},
 		"Successful CandleHigh marshal": {
 			CandleField: CandleHigh,
-			Result:      `"high"`,
+			JSON:        `"high"`,
 		},
 		"Successful CandleLow marshal": {
 			CandleField: CandleLow,
-			Result:      `"low"`,
+			JSON:        `"low"`,
 		},
 		"Successful CandleClose marshal": {
 			CandleField: CandleClose,
-			Result:      `"close"`,
+			JSON:        `"close"`,
 		},
 		"Successful CandleVolume marshal": {
 			CandleField: CandleVolume,
-			Result:      `"volume"`,
+			JSON:        `"volume"`,
 		},
 		"Invalid CandleField": {
 			CandleField: 69,
@@ -242,13 +188,67 @@ func Test_CandleField_MarshalJSON(t *testing.T) {
 		t.Run(cn, func(t *testing.T) {
 			t.Parallel()
 
-			d, err := c.CandleField.MarshalJSON()
+			res, err := c.CandleField.MarshalJSON()
 			AssertEqualError(t, c.Err, err)
 			if err != nil {
 				return
 			}
 
-			assert.JSONEq(t, c.Result, string(d))
+			assert.JSONEq(t, c.JSON, string(res))
+		})
+	}
+}
+
+func Test_CandleField_UnmarshalJSON(t *testing.T) {
+	cc := map[string]struct {
+		JSON   string
+		Result CandleField
+		Err    error
+	}{
+		"Successful CandleOpen unmarshal": {
+			JSON:   `"open"`,
+			Result: CandleOpen,
+		},
+		"Successful CandleHigh unmarshal": {
+			JSON:   `"high"`,
+			Result: CandleHigh,
+		},
+		"Successful CandleLow unmarshal": {
+			JSON:   `"low"`,
+			Result: CandleLow,
+		},
+		"Successful CandleClose unmarshal": {
+			JSON:   `"close"`,
+			Result: CandleClose,
+		},
+		"Successful CandleVolume unmarshal": {
+			JSON:   `"volume"`,
+			Result: CandleVolume,
+		},
+		"Malformed JSON": {
+			JSON: `{"69"`,
+			Err:  assert.AnError,
+		},
+		"Invalid CandleField": {
+			JSON: `"69"`,
+			Err:  ErrInvalidCandleField,
+		},
+	}
+
+	for cn, c := range cc {
+		c := c
+
+		t.Run(cn, func(t *testing.T) {
+			t.Parallel()
+
+			var cf CandleField
+			err := cf.UnmarshalJSON([]byte(c.JSON))
+			AssertEqualError(t, c.Err, err)
+			if err != nil {
+				return
+			}
+
+			assert.Equal(t, c.Result, cf)
 		})
 	}
 }
@@ -427,20 +427,20 @@ func Test_TickerField_Validate(t *testing.T) {
 func Test_TickerField_MarshalJSON(t *testing.T) {
 	cc := map[string]struct {
 		TickerField TickerField
-		Result      string
+		JSON        string
 		Err         error
 	}{
 		"Successful TickerLast marshal": {
 			TickerField: TickerLast,
-			Result:      `"last"`,
+			JSON:        `"last"`,
 		},
 		"Successful TickerAsk marshal": {
 			TickerField: TickerAsk,
-			Result:      `"ask"`,
+			JSON:        `"ask"`,
 		},
 		"Successful TickerBid marshal": {
 			TickerField: TickerBid,
-			Result:      `"bid"`,
+			JSON:        `"bid"`,
 		},
 		"Invalid TickerField": {
 			TickerField: 69,
@@ -454,53 +454,53 @@ func Test_TickerField_MarshalJSON(t *testing.T) {
 		t.Run(cn, func(t *testing.T) {
 			t.Parallel()
 
-			d, err := c.TickerField.MarshalJSON()
+			res, err := c.TickerField.MarshalJSON()
 			AssertEqualError(t, c.Err, err)
 			if err != nil {
 				return
 			}
 
-			assert.JSONEq(t, c.Result, string(d))
+			assert.JSONEq(t, c.JSON, string(res))
 		})
 	}
 }
 
 func Test_TickerField_UnmarshalJSON(t *testing.T) {
 	cc := map[string]struct {
-		Data   string
+		JSON   string
 		Result TickerField
 		Err    error
 	}{
 		"Successful TickerLast unmarshal (long form)": {
-			Data:   `"last"`,
+			JSON:   `"last"`,
 			Result: TickerLast,
 		},
 		"Successful TickerLast unmarshal (short form)": {
-			Data:   `"l"`,
+			JSON:   `"l"`,
 			Result: TickerLast,
 		},
 		"Successful TickerAsk unmarshal  (long form)": {
-			Data:   `"ask"`,
+			JSON:   `"ask"`,
 			Result: TickerAsk,
 		},
 		"Successful TickerAsk unmarshal  (short form)": {
-			Data:   `"a"`,
+			JSON:   `"a"`,
 			Result: TickerAsk,
 		},
 		"Successful TickerBid unmarshal  (long form)": {
-			Data:   `"bid"`,
+			JSON:   `"bid"`,
 			Result: TickerBid,
 		},
 		"Successful TickerBid unmarshal  (short form)": {
-			Data:   `"b"`,
+			JSON:   `"b"`,
 			Result: TickerBid,
 		},
 		"Malformed JSON": {
-			Data: `{"69"`,
+			JSON: `{"69"`,
 			Err:  assert.AnError,
 		},
 		"Invalid TickerField": {
-			Data: `"69"`,
+			JSON: `"69"`,
 			Err:  ErrInvalidTickerField,
 		},
 	}
@@ -512,7 +512,7 @@ func Test_TickerField_UnmarshalJSON(t *testing.T) {
 			t.Parallel()
 
 			var tf TickerField
-			err := tf.UnmarshalJSON([]byte(c.Data))
+			err := tf.UnmarshalJSON([]byte(c.JSON))
 			AssertEqualError(t, c.Err, err)
 			if err != nil {
 				return
