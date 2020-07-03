@@ -1,4 +1,4 @@
-module github.com/swithek/chartype
+module github.com/jellydator/chartype
 
 go 1.13
 
