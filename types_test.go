@@ -197,24 +197,44 @@ func Test_CandleField_UnmarshalJSON(t *testing.T) {
 			JSON: `"70"`,
 			Err:  ErrInvalidCandleField,
 		},
-		"Successful CandleOpen unmarshal": {
+		"Successful CandleOpen unmarshal (long form)": {
 			JSON:   `"open"`,
 			Result: CandleOpen,
 		},
-		"Successful CandleHigh unmarshal": {
+		"Successful CandleOpen unmarshal (short form)": {
+			JSON:   `"o"`,
+			Result: CandleOpen,
+		},
+		"Successful CandleHigh unmarshal (long form)": {
 			JSON:   `"high"`,
 			Result: CandleHigh,
 		},
-		"Successful CandleLow unmarshal": {
+		"Successful CandleHigh unmarshal (short form)": {
+			JSON:   `"h"`,
+			Result: CandleHigh,
+		},
+		"Successful CandleLow unmarshal (long form)": {
 			JSON:   `"low"`,
 			Result: CandleLow,
 		},
-		"Successful CandleClose unmarshal": {
+		"Successful CandleLow unmarshal (short form)": {
+			JSON:   `"low"`,
+			Result: CandleLow,
+		},
+		"Successful CandleClose unmarshal (long form)": {
 			JSON:   `"close"`,
 			Result: CandleClose,
 		},
-		"Successful CandleVolume unmarshal": {
+		"Successful CandleClose unmarshal (short form)": {
+			JSON:   `"c"`,
+			Result: CandleClose,
+		},
+		"Successful CandleVolume unmarshal (long form)": {
 			JSON:   `"volume"`,
+			Result: CandleVolume,
+		},
+		"Successful CandleVolume unmarshal (short form)": {
+			JSON:   `"v"`,
 			Result: CandleVolume,
 		},
 	}
