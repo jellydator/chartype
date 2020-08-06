@@ -43,48 +43,35 @@ type Candle struct {
 	Volume    decimal.Decimal `json:"volume"`
 }
 
-// NewCandle instantiates a new candle with the timestamp provided.
-func NewCandle(timestamp time.Time) Candle {
-	return Candle{
-		Timestamp: timestamp,
-	}
-}
-
-// Parse parses provided string parameters into corresponding candle's fields.
-func (c *Candle) Parse(opn, hgh, low, cls, vol string) error {
-	o, err := decimal.NewFromString(opn)
+// ParseCandle parses provided string parameters into newly created candle's fields
+// and returns it.
+func ParseCandle(t time.Time, os, hs, ls, cs, vs string) (Candle, error) {
+	o, err := decimal.NewFromString(os)
 	if err != nil {
-		return err
+		return Candle{}, err
 	}
 
-	h, err := decimal.NewFromString(hgh)
+	h, err := decimal.NewFromString(hs)
 	if err != nil {
-		return err
+		return Candle{}, err
 	}
 
-	l, err := decimal.NewFromString(low)
+	l, err := decimal.NewFromString(ls)
 	if err != nil {
-		return err
+		return Candle{}, err
 	}
 
-	clsD, err := decimal.NewFromString(cls)
+	c, err := decimal.NewFromString(cs)
 	if err != nil {
-		return err
+		return Candle{}, err
 	}
 
-	v, err := decimal.NewFromString(vol)
+	v, err := decimal.NewFromString(vs)
 	if err != nil {
-		return err
-
+		return Candle{}, err
 	}
 
-	(*c).Open = o
-	(*c).High = h
-	(*c).Low = l
-	(*c).Close = clsD
-	(*c).Volume = v
-
-	return nil
+	return Candle{Timestamp: t, Open: o, High: h, Low: l, Close: c, Volume: v}, nil
 }
 
 // CandleField specifies which field should be extracted
@@ -209,18 +196,18 @@ type Ticker struct {
 
 // ParseTicker parses provided string parameters into decimal type values,
 // adds them into a new ticker instance and returns it.
-func ParseTicker(lst, ask, bid string) (Ticker, error) {
-	l, err := decimal.NewFromString(lst)
+func ParseTicker(ls, as, bs string) (Ticker, error) {
+	l, err := decimal.NewFromString(ls)
 	if err != nil {
 		return Ticker{}, err
 	}
 
-	a, err := decimal.NewFromString(ask)
+	a, err := decimal.NewFromString(as)
 	if err != nil {
 		return Ticker{}, err
 	}
 
-	b, err := decimal.NewFromString(bid)
+	b, err := decimal.NewFromString(bs)
 	if err != nil {
 		return Ticker{}, err
 	}

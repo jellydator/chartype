@@ -8,36 +8,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_NewCandle(t *testing.T) {
-	time := time.Now()
-
-	res := Candle{
-		Timestamp: time,
-	}
-
-	d := NewCandle(time)
-
-	assert.Equal(t, res, d)
-}
-
-func Test_Candle_Parse(t *testing.T) {
+func Test_ParseCandle(t *testing.T) {
 	cc := map[string]struct {
-		Candle Candle
-		Open   string
-		High   string
-		Low    string
-		Close  string
-		Volume string
-		Result Candle
-		Err    error
+		Timestamp time.Time
+		Open      string
+		High      string
+		Low       string
+		Close     string
+		Volume    string
+		Result    Candle
+		Err       error
 	}{
 		"Successful parse": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "3",
-			Low:    "5",
-			Close:  "7",
-			Volume: "9",
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "3",
+			Low:       "5",
+			Close:     "7",
+			Volume:    "9",
 			Result: Candle{
 				Timestamp: time.Time{},
 				Open:      decimal.NewFromInt(1),
@@ -48,49 +36,49 @@ func Test_Candle_Parse(t *testing.T) {
 			},
 		},
 		"Invalid Open": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "-",
-			High:   "3",
-			Low:    "5",
-			Close:  "7",
-			Volume: "9",
-			Err:    assert.AnError,
+			Timestamp: time.Time{},
+			Open:      "-",
+			High:      "3",
+			Low:       "5",
+			Close:     "7",
+			Volume:    "9",
+			Err:       assert.AnError,
 		},
 		"Invalid High": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "-",
-			Low:    "5",
-			Close:  "7",
-			Volume: "9",
-			Err:    assert.AnError,
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "-",
+			Low:       "5",
+			Close:     "7",
+			Volume:    "9",
+			Err:       assert.AnError,
 		},
 		"Invalid Low": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "3",
-			Low:    "-",
-			Close:  "7",
-			Volume: "9",
-			Err:    assert.AnError,
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "3",
+			Low:       "-",
+			Close:     "7",
+			Volume:    "9",
+			Err:       assert.AnError,
 		},
 		"Invalid Close": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "3",
-			Low:    "5",
-			Close:  "-",
-			Volume: "9",
-			Err:    assert.AnError,
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "3",
+			Low:       "5",
+			Close:     "-",
+			Volume:    "9",
+			Err:       assert.AnError,
 		},
 		"Invalid Volume": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "3",
-			Low:    "5",
-			Close:  "7",
-			Volume: "-",
-			Err:    assert.AnError,
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "3",
+			Low:       "5",
+			Close:     "7",
+			Volume:    "-",
+			Err:       assert.AnError,
 		},
 	}
 
@@ -100,13 +88,13 @@ func Test_Candle_Parse(t *testing.T) {
 		t.Run(cn, func(t *testing.T) {
 			t.Parallel()
 
-			err := c.Candle.Parse(c.Open, c.High, c.Low, c.Close, c.Volume)
+			res, err := ParseCandle(c.Timestamp, c.Open, c.High, c.Low, c.Close, c.Volume)
 			AssertEqualError(t, c.Err, err)
 			if err != nil {
 				return
 			}
 
-			assert.Equal(t, c.Result, c.Candle)
+			assert.Equal(t, c.Result, res)
 		})
 	}
 }
