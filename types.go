@@ -1,9 +1,7 @@
 package chartype
 
 import (
-	"encoding/json"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -90,9 +88,9 @@ func (cf CandleField) Validate() error {
 	}
 }
 
-// MarshalJSON turns candle field to appropriate string
-// representation in JSON.
-func (cf CandleField) MarshalJSON() ([]byte, error) {
+// MarshalText turns candle field to appropriate string
+// representation.
+func (cf CandleField) MarshalText() ([]byte, error) {
 	var v string
 	switch cf {
 	case CandleOpen:
@@ -109,20 +107,13 @@ func (cf CandleField) MarshalJSON() ([]byte, error) {
 		return nil, ErrInvalidCandleField
 	}
 
-	return json.Marshal(v)
+	return []byte(v), nil
 }
 
-// UnmarshalJSON turns JSON string to appropriate candle
+// UnmarshalText turns string to appropriate candle
 // field value.
-func (cf *CandleField) UnmarshalJSON(d []byte) error {
-	var f string
-	if err := json.Unmarshal(d, &f); err != nil {
-		return err
-	}
-
-	f = strings.ToLower(f)
-
-	switch f {
+func (cf *CandleField) UnmarshalText(d []byte) error {
+	switch string(d) {
 	case "open", "o":
 		*cf = CandleOpen
 	case "high", "h":
@@ -251,10 +242,11 @@ func (tf TickerField) Validate() error {
 	}
 }
 
-// MarshalJSON turns ticker field to appropriate string
-// representation in JSON.
-func (tf TickerField) MarshalJSON() ([]byte, error) {
+// MarshalText turns ticker field to appropriate string
+// representation.
+func (tf TickerField) MarshalText() ([]byte, error) {
 	var v string
+
 	switch tf {
 	case TickerLast:
 		v = "last"
@@ -270,20 +262,13 @@ func (tf TickerField) MarshalJSON() ([]byte, error) {
 		return nil, ErrInvalidTickerField
 	}
 
-	return json.Marshal(v)
+	return []byte(v), nil
 }
 
-// UnmarshalJSON turns JSON string to appropriate ticker
+// UnmarshalText turns string to appropriate ticker
 // field value.
-func (tf *TickerField) UnmarshalJSON(d []byte) error {
-	var t string
-	if err := json.Unmarshal(d, &t); err != nil {
-		return err
-	}
-
-	t = strings.ToLower(t)
-
-	switch t {
+func (tf *TickerField) UnmarshalText(d []byte) error {
+	switch string(d) {
 	case "last", "l":
 		*tf = TickerLast
 	case "ask", "a":
