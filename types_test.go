@@ -8,36 +8,69 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_NewCandle(t *testing.T) {
-	time := time.Now()
-
-	res := Candle{
-		Timestamp: time,
-	}
-
-	d := NewCandle(time)
-
-	assert.Equal(t, res, d)
-}
-
-func Test_Candle_Parse(t *testing.T) {
+func Test_ParseCandle(t *testing.T) {
 	cc := map[string]struct {
-		Candle Candle
-		Open   string
-		High   string
-		Low    string
-		Close  string
-		Volume string
-		Result Candle
-		Err    error
+		Timestamp time.Time
+		Open      string
+		High      string
+		Low       string
+		Close     string
+		Volume    string
+		Result    Candle
+		Err       error
 	}{
+		"Invalid Open": {
+			Timestamp: time.Time{},
+			Open:      "-",
+			High:      "3",
+			Low:       "5",
+			Close:     "7",
+			Volume:    "9",
+			Err:       assert.AnError,
+		},
+		"Invalid High": {
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "-",
+			Low:       "5",
+			Close:     "7",
+			Volume:    "9",
+			Err:       assert.AnError,
+		},
+		"Invalid Low": {
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "3",
+			Low:       "-",
+			Close:     "7",
+			Volume:    "9",
+			Err:       assert.AnError,
+		},
+		"Invalid Close": {
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "3",
+			Low:       "5",
+			Close:     "-",
+			Volume:    "9",
+			Err:       assert.AnError,
+		},
+		"Invalid Volume": {
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "3",
+			Low:       "5",
+			Close:     "7",
+			Volume:    "-",
+			Err:       assert.AnError,
+		},
 		"Successful parse": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "3",
-			Low:    "5",
-			Close:  "7",
-			Volume: "9",
+			Timestamp: time.Time{},
+			Open:      "1",
+			High:      "3",
+			Low:       "5",
+			Close:     "7",
+			Volume:    "9",
 			Result: Candle{
 				Timestamp: time.Time{},
 				Open:      decimal.NewFromInt(1),
@@ -47,51 +80,6 @@ func Test_Candle_Parse(t *testing.T) {
 				Volume:    decimal.NewFromInt(9),
 			},
 		},
-		"Invalid Open": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "-",
-			High:   "3",
-			Low:    "5",
-			Close:  "7",
-			Volume: "9",
-			Err:    assert.AnError,
-		},
-		"Invalid High": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "-",
-			Low:    "5",
-			Close:  "7",
-			Volume: "9",
-			Err:    assert.AnError,
-		},
-		"Invalid Low": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "3",
-			Low:    "-",
-			Close:  "7",
-			Volume: "9",
-			Err:    assert.AnError,
-		},
-		"Invalid Close": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "3",
-			Low:    "5",
-			Close:  "-",
-			Volume: "9",
-			Err:    assert.AnError,
-		},
-		"Invalid Volume": {
-			Candle: Candle{Timestamp: time.Time{}},
-			Open:   "1",
-			High:   "3",
-			Low:    "5",
-			Close:  "7",
-			Volume: "-",
-			Err:    assert.AnError,
-		},
 	}
 
 	for cn, c := range cc {
@@ -100,13 +88,13 @@ func Test_Candle_Parse(t *testing.T) {
 		t.Run(cn, func(t *testing.T) {
 			t.Parallel()
 
-			err := c.Candle.Parse(c.Open, c.High, c.Low, c.Close, c.Volume)
+			res, err := ParseCandle(c.Timestamp, c.Open, c.High, c.Low, c.Close, c.Volume)
 			AssertEqualError(t, c.Err, err)
 			if err != nil {
 				return
 			}
 
-			assert.Equal(t, c.Result, c.Candle)
+			assert.Equal(t, c.Result, res)
 		})
 	}
 }
@@ -116,25 +104,21 @@ func Test_CandleField_Validate(t *testing.T) {
 		CandleField CandleField
 		Err         error
 	}{
+		"Invalid CandleField": {
+			CandleField: 70,
+			Err:         ErrInvalidCandleField,
+		},
 		"Successful CandleOpen validation": {
 			CandleField: CandleOpen,
-			Err:         nil,
 		},
 		"Successful CandleHigh validation": {
 			CandleField: CandleHigh,
-			Err:         nil,
 		},
 		"Successful CandleLow validation": {
 			CandleField: CandleLow,
-			Err:         nil,
 		},
 		"Successful CandleClose validation": {
 			CandleField: CandleClose,
-			Err:         nil,
-		},
-		"Invalid CandleField": {
-			CandleField: 69,
-			Err:         ErrInvalidCandleField,
 		},
 	}
 
@@ -156,6 +140,10 @@ func Test_CandleField_MarshalJSON(t *testing.T) {
 		JSON        string
 		Err         error
 	}{
+		"Invalid CandleField": {
+			CandleField: 70,
+			Err:         ErrInvalidCandleField,
+		},
 		"Successful CandleOpen marshal": {
 			CandleField: CandleOpen,
 			JSON:        `"open"`,
@@ -175,10 +163,6 @@ func Test_CandleField_MarshalJSON(t *testing.T) {
 		"Successful CandleVolume marshal": {
 			CandleField: CandleVolume,
 			JSON:        `"volume"`,
-		},
-		"Invalid CandleField": {
-			CandleField: 69,
-			Err:         ErrInvalidCandleField,
 		},
 	}
 
@@ -205,33 +189,53 @@ func Test_CandleField_UnmarshalJSON(t *testing.T) {
 		Result CandleField
 		Err    error
 	}{
-		"Successful CandleOpen unmarshal": {
-			JSON:   `"open"`,
-			Result: CandleOpen,
-		},
-		"Successful CandleHigh unmarshal": {
-			JSON:   `"high"`,
-			Result: CandleHigh,
-		},
-		"Successful CandleLow unmarshal": {
-			JSON:   `"low"`,
-			Result: CandleLow,
-		},
-		"Successful CandleClose unmarshal": {
-			JSON:   `"close"`,
-			Result: CandleClose,
-		},
-		"Successful CandleVolume unmarshal": {
-			JSON:   `"volume"`,
-			Result: CandleVolume,
-		},
 		"Malformed JSON": {
-			JSON: `{"69"`,
+			JSON: `{"70"`,
 			Err:  assert.AnError,
 		},
 		"Invalid CandleField": {
-			JSON: `"69"`,
+			JSON: `"70"`,
 			Err:  ErrInvalidCandleField,
+		},
+		"Successful CandleOpen unmarshal (long form)": {
+			JSON:   `"open"`,
+			Result: CandleOpen,
+		},
+		"Successful CandleOpen unmarshal (short form)": {
+			JSON:   `"o"`,
+			Result: CandleOpen,
+		},
+		"Successful CandleHigh unmarshal (long form)": {
+			JSON:   `"high"`,
+			Result: CandleHigh,
+		},
+		"Successful CandleHigh unmarshal (short form)": {
+			JSON:   `"h"`,
+			Result: CandleHigh,
+		},
+		"Successful CandleLow unmarshal (long form)": {
+			JSON:   `"low"`,
+			Result: CandleLow,
+		},
+		"Successful CandleLow unmarshal (short form)": {
+			JSON:   `"low"`,
+			Result: CandleLow,
+		},
+		"Successful CandleClose unmarshal (long form)": {
+			JSON:   `"close"`,
+			Result: CandleClose,
+		},
+		"Successful CandleClose unmarshal (short form)": {
+			JSON:   `"c"`,
+			Result: CandleClose,
+		},
+		"Successful CandleVolume unmarshal (long form)": {
+			JSON:   `"volume"`,
+			Result: CandleVolume,
+		},
+		"Successful CandleVolume unmarshal (short form)": {
+			JSON:   `"v"`,
+			Result: CandleVolume,
 		},
 	}
 
@@ -259,6 +263,17 @@ func Test_CandleField_Extract(t *testing.T) {
 		Candle      Candle
 		Result      decimal.Decimal
 	}{
+		"Invalid CandleField": {
+			CandleField: 70,
+			Candle: Candle{
+				Open:   decimal.NewFromInt(30),
+				High:   decimal.NewFromInt(30),
+				Low:    decimal.NewFromInt(30),
+				Close:  decimal.NewFromInt(30),
+				Volume: decimal.NewFromInt(30),
+			},
+			Result: decimal.Zero,
+		},
 		"Successful Open extract": {
 			CandleField: CandleOpen,
 			Candle:      Candle{Open: decimal.NewFromInt(10)},
@@ -283,17 +298,6 @@ func Test_CandleField_Extract(t *testing.T) {
 			CandleField: CandleVolume,
 			Candle:      Candle{Volume: decimal.NewFromInt(30)},
 			Result:      decimal.NewFromInt(30),
-		},
-		"Invalid CandleField": {
-			CandleField: 69,
-			Candle: Candle{
-				Open:   decimal.NewFromInt(30),
-				High:   decimal.NewFromInt(30),
-				Low:    decimal.NewFromInt(30),
-				Close:  decimal.NewFromInt(30),
-				Volume: decimal.NewFromInt(30),
-			},
-			Result: decimal.Zero,
 		},
 	}
 
@@ -335,39 +339,67 @@ func Test_FromCandles(t *testing.T) {
 
 func Test_ParseTicker(t *testing.T) {
 	cc := map[string]struct {
-		Last   string
-		Ask    string
-		Bid    string
-		Result Ticker
-		Err    error
+		Last          string
+		Ask           string
+		Bid           string
+		Change        string
+		PercentChange string
+		Result        Ticker
+		Err           error
 	}{
-		"Successful parse": {
-			Last: "1",
-			Ask:  "3",
-			Bid:  "5",
-			Result: Ticker{
-				Last: decimal.NewFromInt(1),
-				Ask:  decimal.NewFromInt(3),
-				Bid:  decimal.NewFromInt(5),
-			},
-		},
 		"Invalid Last": {
-			Last: "-",
-			Ask:  "3",
-			Bid:  "5",
-			Err:  assert.AnError,
+			Last:          "-",
+			Ask:           "3",
+			Bid:           "5",
+			Change:        "2",
+			PercentChange: "2",
+			Err:           assert.AnError,
 		},
 		"Invalid Ask": {
-			Last: "1",
-			Ask:  "-",
-			Bid:  "5",
-			Err:  assert.AnError,
+			Last:          "1",
+			Ask:           "-",
+			Bid:           "5",
+			Change:        "3",
+			PercentChange: "2",
+			Err:           assert.AnError,
 		},
 		"Invalid Bid": {
-			Last: "1",
-			Ask:  "3",
-			Bid:  "-",
-			Err:  assert.AnError,
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "-",
+			Change:        "2",
+			PercentChange: "2",
+			Err:           assert.AnError,
+		},
+		"Invalid Change": {
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "4",
+			Change:        "-",
+			PercentChange: "2",
+			Err:           assert.AnError,
+		},
+		"Invalid PercentChange": {
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "4",
+			Change:        "2",
+			PercentChange: "-",
+			Err:           assert.AnError,
+		},
+		"Successful parse": {
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "5",
+			Change:        "4",
+			PercentChange: "2",
+			Result: Ticker{
+				Last:          decimal.NewFromInt(1),
+				Ask:           decimal.NewFromInt(3),
+				Bid:           decimal.NewFromInt(5),
+				Change:        decimal.NewFromInt(4),
+				PercentChange: decimal.NewFromInt(2),
+			},
 		},
 	}
 
@@ -377,7 +409,7 @@ func Test_ParseTicker(t *testing.T) {
 		t.Run(cn, func(t *testing.T) {
 			t.Parallel()
 
-			tr, err := ParseTicker(c.Last, c.Ask, c.Bid)
+			tr, err := ParseTicker(c.Last, c.Ask, c.Bid, c.Change, c.PercentChange)
 			AssertEqualError(t, c.Err, err)
 			if err != nil {
 				return
@@ -393,21 +425,24 @@ func Test_TickerField_Validate(t *testing.T) {
 		TickerField TickerField
 		Err         error
 	}{
+		"Invalid TickerField": {
+			TickerField: 70,
+			Err:         ErrInvalidTickerField,
+		},
 		"Successful TickerLast validation": {
 			TickerField: TickerLast,
-			Err:         nil,
 		},
 		"Successful TickerAsk validation": {
 			TickerField: TickerAsk,
-			Err:         nil,
 		},
 		"Successful TickerBid validation": {
 			TickerField: TickerBid,
-			Err:         nil,
 		},
-		"Invalid TickerField": {
-			TickerField: 69,
-			Err:         ErrInvalidTickerField,
+		"Successful TickerChange validation": {
+			TickerField: TickerChange,
+		},
+		"Successful TickerPercentChange validation": {
+			TickerField: TickerPercentChange,
 		},
 	}
 
@@ -430,6 +465,10 @@ func Test_TickerField_MarshalJSON(t *testing.T) {
 		JSON        string
 		Err         error
 	}{
+		"Invalid TickerField": {
+			TickerField: 70,
+			Err:         ErrInvalidTickerField,
+		},
 		"Successful TickerLast marshal": {
 			TickerField: TickerLast,
 			JSON:        `"last"`,
@@ -442,9 +481,13 @@ func Test_TickerField_MarshalJSON(t *testing.T) {
 			TickerField: TickerBid,
 			JSON:        `"bid"`,
 		},
-		"Invalid TickerField": {
-			TickerField: 69,
-			Err:         ErrInvalidTickerField,
+		"Successful TickerChange marshal": {
+			TickerField: TickerChange,
+			JSON:        `"change"`,
+		},
+		"Successful TickerPercentChange marshal": {
+			TickerField: TickerPercentChange,
+			JSON:        `"percent_change"`,
 		},
 	}
 
@@ -471,6 +514,14 @@ func Test_TickerField_UnmarshalJSON(t *testing.T) {
 		Result TickerField
 		Err    error
 	}{
+		"Malformed JSON": {
+			JSON: `{"70"`,
+			Err:  assert.AnError,
+		},
+		"Invalid TickerField": {
+			JSON: `"70"`,
+			Err:  ErrInvalidTickerField,
+		},
 		"Successful TickerLast unmarshal (long form)": {
 			JSON:   `"last"`,
 			Result: TickerLast,
@@ -495,13 +546,21 @@ func Test_TickerField_UnmarshalJSON(t *testing.T) {
 			JSON:   `"b"`,
 			Result: TickerBid,
 		},
-		"Malformed JSON": {
-			JSON: `{"69"`,
-			Err:  assert.AnError,
+		"Successful TickerChange unmarshal  (long form)": {
+			JSON:   `"change"`,
+			Result: TickerChange,
 		},
-		"Invalid TickerField": {
-			JSON: `"69"`,
-			Err:  ErrInvalidTickerField,
+		"Successful TickerChange unmarshal  (short form)": {
+			JSON:   `"c"`,
+			Result: TickerChange,
+		},
+		"Successful TickerPercentChange unmarshal  (long form)": {
+			JSON:   `"percent_change"`,
+			Result: TickerPercentChange,
+		},
+		"Successful TickerPercentChange unmarshal  (short form)": {
+			JSON:   `"pc"`,
+			Result: TickerPercentChange,
 		},
 	}
 
@@ -529,6 +588,15 @@ func Test_TickerField_Extract(t *testing.T) {
 		Ticker      Ticker
 		Result      decimal.Decimal
 	}{
+		"Invalid CandleField": {
+			TickerField: 70,
+			Ticker: Ticker{
+				Last: decimal.NewFromInt(30),
+				Ask:  decimal.NewFromInt(30),
+				Bid:  decimal.NewFromInt(30),
+			},
+			Result: decimal.Zero,
+		},
 		"Successful Last extract": {
 			TickerField: TickerLast,
 			Ticker:      Ticker{Last: decimal.NewFromInt(10)},
@@ -544,14 +612,15 @@ func Test_TickerField_Extract(t *testing.T) {
 			Ticker:      Ticker{Bid: decimal.NewFromInt(20)},
 			Result:      decimal.NewFromInt(20),
 		},
-		"Invalid CandleField": {
-			TickerField: 69,
-			Ticker: Ticker{
-				Last: decimal.NewFromInt(30),
-				Ask:  decimal.NewFromInt(30),
-				Bid:  decimal.NewFromInt(30),
-			},
-			Result: decimal.Zero,
+		"Successful Change extract": {
+			TickerField: TickerChange,
+			Ticker:      Ticker{Change: decimal.NewFromInt(220)},
+			Result:      decimal.NewFromInt(220),
+		},
+		"Successful PercentChange extract": {
+			TickerField: TickerPercentChange,
+			Ticker:      Ticker{PercentChange: decimal.NewFromInt(203)},
+			Result:      decimal.NewFromInt(203),
 		},
 	}
 

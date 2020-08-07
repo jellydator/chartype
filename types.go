@@ -43,48 +43,35 @@ type Candle struct {
 	Volume    decimal.Decimal `json:"volume"`
 }
 
-// NewCandle instantiates a new candle with the timestamp provided.
-func NewCandle(timestamp time.Time) Candle {
-	return Candle{
-		Timestamp: timestamp,
-	}
-}
-
-// Parse parses provided string parameters into corresponding candle's fields.
-func (c *Candle) Parse(opn, hgh, low, cls, vol string) error {
-	o, err := decimal.NewFromString(opn)
+// ParseCandle parses provided string parameters into newly created candle's fields
+// and returns it.
+func ParseCandle(t time.Time, os, hs, ls, cs, vs string) (Candle, error) {
+	o, err := decimal.NewFromString(os)
 	if err != nil {
-		return err
+		return Candle{}, err
 	}
 
-	h, err := decimal.NewFromString(hgh)
+	h, err := decimal.NewFromString(hs)
 	if err != nil {
-		return err
+		return Candle{}, err
 	}
 
-	l, err := decimal.NewFromString(low)
+	l, err := decimal.NewFromString(ls)
 	if err != nil {
-		return err
+		return Candle{}, err
 	}
 
-	clsD, err := decimal.NewFromString(cls)
+	c, err := decimal.NewFromString(cs)
 	if err != nil {
-		return err
+		return Candle{}, err
 	}
 
-	v, err := decimal.NewFromString(vol)
+	v, err := decimal.NewFromString(vs)
 	if err != nil {
-		return err
-
+		return Candle{}, err
 	}
 
-	(*c).Open = o
-	(*c).High = h
-	(*c).Low = l
-	(*c).Close = clsD
-	(*c).Volume = v
-
-	return nil
+	return Candle{Timestamp: t, Open: o, High: h, Low: l, Close: c, Volume: v}, nil
 }
 
 // CandleField specifies which field should be extracted
@@ -184,14 +171,22 @@ func FromCandles(cc []Candle, cf CandleField) []decimal.Decimal {
 }
 
 const (
-	// TickerLast specifies the last ticker value.
+	// TickerLast specifies last ticker value.
 	TickerLast TickerField = iota + 1
 
-	// TickerAsk specifies the ask ticker value.
+	// TickerAsk specifies ask ticker value.
 	TickerAsk
 
-	// TickerBid specifies the bid ticker value.
+	// TickerBid specifies bid ticker value.
 	TickerBid
+
+	// TickerChange specifies 24 hours price units change in
+	// last ticker price.
+	TickerChange
+
+	// TickerPercentChange specifies 24 hour price percent change in
+	// last ticker price.
+	TickerPercentChange
 )
 
 var (
@@ -202,30 +197,42 @@ var (
 
 // Ticker holds current ask, last and bid prices.
 type Ticker struct {
-	Last decimal.Decimal `json:"last"`
-	Ask  decimal.Decimal `json:"ask"`
-	Bid  decimal.Decimal `json:"bid"`
+	Last          decimal.Decimal `json:"last"`
+	Ask           decimal.Decimal `json:"ask"`
+	Bid           decimal.Decimal `json:"bid"`
+	Change        decimal.Decimal `json:"change"`
+	PercentChange decimal.Decimal `json:"percent_change"`
 }
 
 // ParseTicker parses provided string parameters into decimal type values,
 // adds them into a new ticker instance and returns it.
-func ParseTicker(lst, ask, bid string) (Ticker, error) {
-	l, err := decimal.NewFromString(lst)
+func ParseTicker(ls, as, bs, cs, pcs string) (Ticker, error) {
+	l, err := decimal.NewFromString(ls)
 	if err != nil {
 		return Ticker{}, err
 	}
 
-	a, err := decimal.NewFromString(ask)
+	a, err := decimal.NewFromString(as)
 	if err != nil {
 		return Ticker{}, err
 	}
 
-	b, err := decimal.NewFromString(bid)
+	b, err := decimal.NewFromString(bs)
 	if err != nil {
 		return Ticker{}, err
 	}
 
-	return Ticker{Last: l, Ask: a, Bid: b}, nil
+	c, err := decimal.NewFromString(cs)
+	if err != nil {
+		return Ticker{}, err
+	}
+
+	pc, err := decimal.NewFromString(pcs)
+	if err != nil {
+		return Ticker{}, err
+	}
+
+	return Ticker{Last: l, Ask: a, Bid: b, Change: c, PercentChange: pc}, nil
 }
 
 // TickerField specifies which field should be extracted
@@ -237,7 +244,7 @@ type TickerField int
 // supported field types or not.
 func (tf TickerField) Validate() error {
 	switch tf {
-	case TickerLast, TickerAsk, TickerBid:
+	case TickerLast, TickerAsk, TickerBid, TickerChange, TickerPercentChange:
 		return nil
 	default:
 		return ErrInvalidTickerField
@@ -255,6 +262,10 @@ func (tf TickerField) MarshalJSON() ([]byte, error) {
 		v = "ask"
 	case TickerBid:
 		v = "bid"
+	case TickerChange:
+		v = "change"
+	case TickerPercentChange:
+		v = "percent_change"
 	default:
 		return nil, ErrInvalidTickerField
 	}
@@ -279,6 +290,10 @@ func (tf *TickerField) UnmarshalJSON(d []byte) error {
 		*tf = TickerAsk
 	case "bid", "b":
 		*tf = TickerBid
+	case "change", "c":
+		*tf = TickerChange
+	case "percent_change", "pc":
+		*tf = TickerPercentChange
 	default:
 		return ErrInvalidTickerField
 	}
@@ -296,6 +311,10 @@ func (tf TickerField) Extract(t Ticker) decimal.Decimal {
 		return t.Ask
 	case TickerBid:
 		return t.Bid
+	case TickerChange:
+		return t.Change
+	case TickerPercentChange:
+		return t.PercentChange
 	default:
 		return decimal.Zero
 	}
