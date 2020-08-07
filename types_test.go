@@ -339,51 +339,66 @@ func Test_FromCandles(t *testing.T) {
 
 func Test_ParseTicker(t *testing.T) {
 	cc := map[string]struct {
-		Last   string
-		Ask    string
-		Bid    string
-		Change string
-		Result Ticker
-		Err    error
+		Last          string
+		Ask           string
+		Bid           string
+		Change        string
+		PercentChange string
+		Result        Ticker
+		Err           error
 	}{
 		"Invalid Last": {
-			Last:   "-",
-			Ask:    "3",
-			Bid:    "5",
-			Change: "2",
-			Err:    assert.AnError,
+			Last:          "-",
+			Ask:           "3",
+			Bid:           "5",
+			Change:        "2",
+			PercentChange: "2",
+			Err:           assert.AnError,
 		},
 		"Invalid Ask": {
-			Last:   "1",
-			Ask:    "-",
-			Bid:    "5",
-			Change: "3",
-			Err:    assert.AnError,
+			Last:          "1",
+			Ask:           "-",
+			Bid:           "5",
+			Change:        "3",
+			PercentChange: "2",
+			Err:           assert.AnError,
 		},
 		"Invalid Bid": {
-			Last:   "1",
-			Ask:    "3",
-			Bid:    "-",
-			Change: "2",
-			Err:    assert.AnError,
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "-",
+			Change:        "2",
+			PercentChange: "2",
+			Err:           assert.AnError,
 		},
 		"Invalid Change": {
-			Last:   "1",
-			Ask:    "3",
-			Bid:    "4",
-			Change: "-",
-			Err:    assert.AnError,
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "4",
+			Change:        "-",
+			PercentChange: "2",
+			Err:           assert.AnError,
+		},
+		"Invalid PercentChange": {
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "4",
+			Change:        "2",
+			PercentChange: "-",
+			Err:           assert.AnError,
 		},
 		"Successful parse": {
-			Last:   "1",
-			Ask:    "3",
-			Bid:    "5",
-			Change: "4",
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "5",
+			Change:        "4",
+			PercentChange: "2",
 			Result: Ticker{
-				Last:   decimal.NewFromInt(1),
-				Ask:    decimal.NewFromInt(3),
-				Bid:    decimal.NewFromInt(5),
-				Change: decimal.NewFromInt(4),
+				Last:          decimal.NewFromInt(1),
+				Ask:           decimal.NewFromInt(3),
+				Bid:           decimal.NewFromInt(5),
+				Change:        decimal.NewFromInt(4),
+				PercentChange: decimal.NewFromInt(2),
 			},
 		},
 	}
@@ -394,7 +409,7 @@ func Test_ParseTicker(t *testing.T) {
 		t.Run(cn, func(t *testing.T) {
 			t.Parallel()
 
-			tr, err := ParseTicker(c.Last, c.Ask, c.Bid, c.Change)
+			tr, err := ParseTicker(c.Last, c.Ask, c.Bid, c.Change, c.PercentChange)
 			AssertEqualError(t, c.Err, err)
 			if err != nil {
 				return
@@ -425,6 +440,9 @@ func Test_TickerField_Validate(t *testing.T) {
 		},
 		"Successful TickerChange validation": {
 			TickerField: TickerChange,
+		},
+		"Successful TickerPercentChange validation": {
+			TickerField: TickerPercentChange,
 		},
 	}
 
@@ -459,9 +477,17 @@ func Test_TickerField_MarshalJSON(t *testing.T) {
 			TickerField: TickerAsk,
 			JSON:        `"ask"`,
 		},
+		"Successful TickerBid marshal": {
+			TickerField: TickerBid,
+			JSON:        `"bid"`,
+		},
 		"Successful TickerChange marshal": {
 			TickerField: TickerChange,
 			JSON:        `"change"`,
+		},
+		"Successful TickerPercentChange marshal": {
+			TickerField: TickerPercentChange,
+			JSON:        `"percent_change"`,
 		},
 	}
 
@@ -528,6 +554,14 @@ func Test_TickerField_UnmarshalJSON(t *testing.T) {
 			JSON:   `"c"`,
 			Result: TickerChange,
 		},
+		"Successful TickerPercentChange unmarshal  (long form)": {
+			JSON:   `"percent_change"`,
+			Result: TickerPercentChange,
+		},
+		"Successful TickerPercentChange unmarshal  (short form)": {
+			JSON:   `"pc"`,
+			Result: TickerPercentChange,
+		},
 	}
 
 	for cn, c := range cc {
@@ -577,6 +611,16 @@ func Test_TickerField_Extract(t *testing.T) {
 			TickerField: TickerBid,
 			Ticker:      Ticker{Bid: decimal.NewFromInt(20)},
 			Result:      decimal.NewFromInt(20),
+		},
+		"Successful Change extract": {
+			TickerField: TickerChange,
+			Ticker:      Ticker{Change: decimal.NewFromInt(220)},
+			Result:      decimal.NewFromInt(220),
+		},
+		"Successful PercentChange extract": {
+			TickerField: TickerPercentChange,
+			Ticker:      Ticker{PercentChange: decimal.NewFromInt(203)},
+			Result:      decimal.NewFromInt(203),
 		},
 	}
 
