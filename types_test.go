@@ -340,6 +340,7 @@ func Test_ParseTicker(t *testing.T) {
 		Bid           string
 		Change        string
 		PercentChange string
+		Volume        string
 		Result        Ticker
 		Err           error
 	}{
@@ -383,18 +384,29 @@ func Test_ParseTicker(t *testing.T) {
 			PercentChange: "-",
 			Err:           assert.AnError,
 		},
+		"Invalid Volume": {
+			Last:          "1",
+			Ask:           "3",
+			Bid:           "4",
+			Change:        "2",
+			PercentChange: "2",
+			Volume:        "-",
+			Err:           assert.AnError,
+		},
 		"Successful parse": {
 			Last:          "1",
 			Ask:           "3",
 			Bid:           "5",
 			Change:        "4",
 			PercentChange: "2",
+			Volume:        "1",
 			Result: Ticker{
 				Last:          decimal.NewFromInt(1),
 				Ask:           decimal.NewFromInt(3),
 				Bid:           decimal.NewFromInt(5),
 				Change:        decimal.NewFromInt(4),
 				PercentChange: decimal.NewFromInt(2),
+				Volume:        decimal.NewFromInt(1),
 			},
 		},
 	}
@@ -405,7 +417,7 @@ func Test_ParseTicker(t *testing.T) {
 		t.Run(cn, func(t *testing.T) {
 			t.Parallel()
 
-			tr, err := ParseTicker(c.Last, c.Ask, c.Bid, c.Change, c.PercentChange)
+			tr, err := ParseTicker(c.Last, c.Ask, c.Bid, c.Change, c.PercentChange, c.Volume)
 			AssertEqualError(t, c.Err, err)
 			if err != nil {
 				return
@@ -439,6 +451,9 @@ func Test_TickerField_Validate(t *testing.T) {
 		},
 		"Successful TickerPercentChange validation": {
 			TickerField: TickerPercentChange,
+		},
+		"Successful TickerVolume validation": {
+			TickerField: TickerVolume,
 		},
 	}
 
@@ -483,6 +498,10 @@ func Test_TickerField_MarshalText(t *testing.T) {
 		"Successful TickerPercentChange marshal": {
 			TickerField: TickerPercentChange,
 			Text:        "percent_change",
+		},
+		"Successful TickerVolume marshal": {
+			TickerField: TickerVolume,
+			Text:        "volume",
 		},
 	}
 
@@ -553,6 +572,14 @@ func Test_TickerField_UnmarshalText(t *testing.T) {
 			Text:   "pc",
 			Result: TickerPercentChange,
 		},
+		"Successful Volume unmarshal  (long form)": {
+			Text:   "volume",
+			Result: TickerVolume,
+		},
+		"Successful Volume unmarshal  (short form)": {
+			Text:   "v",
+			Result: TickerVolume,
+		},
 	}
 
 	for cn, c := range cc {
@@ -612,6 +639,11 @@ func Test_TickerField_Extract(t *testing.T) {
 			TickerField: TickerPercentChange,
 			Ticker:      Ticker{PercentChange: decimal.NewFromInt(203)},
 			Result:      decimal.NewFromInt(203),
+		},
+		"Successful Volume extract": {
+			TickerField: TickerVolume,
+			Ticker:      Ticker{Volume: decimal.NewFromInt(201)},
+			Result:      decimal.NewFromInt(201),
 		},
 	}
 
