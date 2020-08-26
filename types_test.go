@@ -89,7 +89,7 @@ func Test_ParseCandle(t *testing.T) {
 			t.Parallel()
 
 			res, err := ParseCandle(c.Timestamp, c.Open, c.High, c.Low, c.Close, c.Volume)
-			AssertEqualError(t, c.Err, err)
+			equalError(t, c.Err, err)
 			if err != nil {
 				return
 			}
@@ -129,7 +129,7 @@ func Test_CandleField_Validate(t *testing.T) {
 			t.Parallel()
 
 			err := c.CandleField.Validate()
-			AssertEqualError(t, c.Err, err)
+			equalError(t, c.Err, err)
 		})
 	}
 }
@@ -173,7 +173,7 @@ func Test_CandleField_MarshalText(t *testing.T) {
 			t.Parallel()
 
 			res, err := c.CandleField.MarshalText()
-			AssertEqualError(t, c.Err, err)
+			equalError(t, c.Err, err)
 			if err != nil {
 				return
 			}
@@ -243,7 +243,7 @@ func Test_CandleField_UnmarshalJSON(t *testing.T) {
 
 			var cf CandleField
 			err := cf.UnmarshalText([]byte(c.Text))
-			AssertEqualError(t, c.Err, err)
+			equalError(t, c.Err, err)
 			if err != nil {
 				return
 			}
@@ -418,7 +418,7 @@ func Test_ParseTicker(t *testing.T) {
 			t.Parallel()
 
 			tr, err := ParseTicker(c.Last, c.Ask, c.Bid, c.Change, c.PercentChange, c.Volume)
-			AssertEqualError(t, c.Err, err)
+			equalError(t, c.Err, err)
 			if err != nil {
 				return
 			}
@@ -464,7 +464,7 @@ func Test_TickerField_Validate(t *testing.T) {
 			t.Parallel()
 
 			err := c.TickerField.Validate()
-			AssertEqualError(t, c.Err, err)
+			equalError(t, c.Err, err)
 		})
 	}
 }
@@ -512,7 +512,7 @@ func Test_TickerField_MarshalText(t *testing.T) {
 			t.Parallel()
 
 			res, err := c.TickerField.MarshalText()
-			AssertEqualError(t, c.Err, err)
+			equalError(t, c.Err, err)
 			if err != nil {
 				return
 			}
@@ -590,7 +590,7 @@ func Test_TickerField_UnmarshalText(t *testing.T) {
 
 			var tf TickerField
 			err := tf.UnmarshalText([]byte(c.Text))
-			AssertEqualError(t, c.Err, err)
+			equalError(t, c.Err, err)
 			if err != nil {
 				return
 			}

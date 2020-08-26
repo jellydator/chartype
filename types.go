@@ -1,3 +1,5 @@
+// Package chartype provides types and functions for convenient work with
+// market data structures.
 package chartype
 
 import (
@@ -92,6 +94,7 @@ func (cf CandleField) Validate() error {
 // representation.
 func (cf CandleField) MarshalText() ([]byte, error) {
 	var v string
+
 	switch cf {
 	case CandleOpen:
 		v = "open"
@@ -102,7 +105,7 @@ func (cf CandleField) MarshalText() ([]byte, error) {
 	case CandleClose:
 		v = "close"
 	case CandleVolume:
-		v = "volume"
+		v = "volume" //nolint:goconst // we need to be explicit about these fields
 	default:
 		return nil, ErrInvalidCandleField
 	}
@@ -153,9 +156,9 @@ func (cf CandleField) Extract(c Candle) decimal.Decimal {
 // FromCandles extracts specific candle fields from all provided candles
 // and puts them in plain number slice.
 func FromCandles(cc []Candle, cf CandleField) []decimal.Decimal {
-	var res []decimal.Decimal
-	for _, c := range cc {
-		res = append(res, cf.Extract(c))
+	res := make([]decimal.Decimal, len(cc))
+	for i, c := range cc {
+		res[i] = cf.Extract(c)
 	}
 
 	return res

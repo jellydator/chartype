@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// AssertEqualError uses testify's assert package to check if errors
+// equalError uses testify's assert package to check if errors
 // are equal or, if assert.AnError is expected, whether an error exists
 // or not.
-func AssertEqualError(t *testing.T, exp, err error) {
+func equalError(t *testing.T, exp, err error) {
 	t.Helper()
 
 	if exp != nil {
