@@ -35,12 +35,12 @@ var (
 // Candle stores specific timeframe's starting, closing,
 // highest and lowest price points.
 type Candle struct {
-	Timestamp time.Time       `json:"timestamp"`
-	Open      decimal.Decimal `json:"open"`
-	High      decimal.Decimal `json:"high"`
-	Low       decimal.Decimal `json:"low"`
-	Close     decimal.Decimal `json:"close"`
-	Volume    decimal.Decimal `json:"volume"`
+	Timestamp time.Time       `json:"timestamp" db:"timestamp"`
+	Open      decimal.Decimal `json:"open" db:"open"`
+	High      decimal.Decimal `json:"high" db:"high"`
+	Low       decimal.Decimal `json:"low" db:"low"`
+	Close     decimal.Decimal `json:"close" db:"close"`
+	Volume    decimal.Decimal `json:"volume" db:"volume"`
 }
 
 // ParseCandle parses provided string parameters into newly created candle's fields
